@@ -200,7 +200,7 @@ def setup_camera():
     gluLookAt(camera_distance * math.sin(math.radians(camera_angle_y)),
               camera_distance * math.sin(math.radians(camera_angle_x)),
               camera_distance * math.cos(math.radians(camera_angle_y)),
-              0.0, 0.0, 0.0,
+              0.0, 1.0, 0.0,
               0.0, 1.0, 0.0)
 
 # Função para tratar a movimentação da câmera
