@@ -232,6 +232,16 @@ def update_pendulum(dt):
     angular_velocity *= (1 - damping)  # Aplicar amortecimento
     angle += angular_velocity * dt
 
+def handle_speed_control(keys):
+    global angular_velocity
+    
+    speed_increment = 0.1  # Valor para aumentar ou diminuir a velocidade
+    
+    if keys[K_EQUALS]: # Tecla "+"
+        angular_velocity += speed_increment  # Aumenta a velocidade angular
+    if keys[K_MINUS]:  # Tecla "-"
+        angular_velocity -= speed_increment  # Diminui a velocidade angular
+
 def main():
     pygame.init()
     display = (800, 600)
@@ -259,6 +269,7 @@ def main():
 
         keys = pygame.key.get_pressed()
         handle_camera_movement(keys)
+        handle_speed_control(keys)  # Controle da velocidade pelo teclado
 
         # Atualização do tempo
         current_time = pygame.time.get_ticks() / 1000.0
@@ -284,4 +295,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
