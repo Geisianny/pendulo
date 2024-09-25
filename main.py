@@ -13,9 +13,9 @@ angular_velocity = 0
 damping = 0.01       # Amortecimento
 
 # Variáveis para movimentação da câmera
-camera_angle_x = 0.0  # Rotação ao longo do eixo X
+camera_angle_x = 15.0  # Rotação ao longo do eixo X
 camera_angle_y = 0.0  # Rotação ao longo do eixo Y
-camera_distance = 5.0 # Distância da câmera
+camera_distance = 6.0 # Distância da câmera
 
 # Função para carregar texturas
 def load_texture(filename):
@@ -35,17 +35,49 @@ def load_texture(filename):
 # Função para configurar a iluminação
 def setup_lighting():
     glEnable(GL_LIGHTING)
+    
+    # Ativar 4 luzes em diferentes posições
     glEnable(GL_LIGHT0)
+    glEnable(GL_LIGHT1)
+    glEnable(GL_LIGHT2)
+    glEnable(GL_LIGHT3)
 
-    light_position = [1.0, 1.0, 2.0, 1.0]
+    # Configurações para a luz 0 (de uma direção)
+    light0_position = [1.0, 1.0, 2.0, 1.0]
     light_ambient = [0.2, 0.2, 0.2, 1.0]
     light_diffuse = [0.7, 0.7, 0.7, 1.0]
     light_specular = [1.0, 1.0, 1.0, 1.0]
 
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_POSITION, light0_position)
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+
+    # Configurações para a luz 1 (lado oposto)
+    light1_position = [-1.0, -1.0, -2.0, 1.0]
+    glLightfv(GL_LIGHT1, GL_POSITION, light1_position)
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular)
+
+    # Configurações para a luz 2 (de cima)
+    light2_position = [0.0, 2.0, 0.0, 1.0]
+    glLightfv(GL_LIGHT2, GL_POSITION, light2_position)
+    glLightfv(GL_LIGHT2, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular)
+
+    # Configurações para a luz 3 (de baixo)
+    light3_position = [0.0, -2.0, 0.0, 1.0]
+    glLightfv(GL_LIGHT3, GL_POSITION, light3_position)
+    glLightfv(GL_LIGHT3, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT3, GL_SPECULAR, light_specular)
+
+    # # Aumentar a iluminação ambiental geral da cena
+    # global_ambient = [0.3, 0.3, 0.3, 1.0]
+    # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient)
+
 
 # Função para desenhar a base e suportes laterais com volume (cilindros) e uma base com volume
 def draw_support_structure(base_texture):
@@ -64,36 +96,42 @@ def draw_support_structure(base_texture):
     glBegin(GL_QUADS)
 
     # Parte superior da base (com textura)
+    glNormal3f(0, 1, 0)  # Normal para cima
     glTexCoord2f(0, 0); glVertex3f(-base_width / 2, 0, base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(base_width / 2, 0, base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, -base_depth / 2)
     glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
 
     # Parte inferior da base (com textura)
+    glNormal3f(0, -1, 0)  # Normal para baixo
     glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
     glTexCoord2f(0, 1); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
 
     # Frente da base (com textura)
+    glNormal3f(0, 0, 1)  # Normal para frente
     glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, base_depth / 2)
     glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, base_depth / 2)
 
     # Traseira da base (com textura)
+    glNormal3f(0, 0, -1)  # Normal para trás
     glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, -base_depth / 2)
     glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
 
     # Lado esquerdo da base (com textura)
+    glNormal3f(-1, 0, 0)  # Normal para o lado esquerdo
     glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(-base_width / 2, 0, base_depth / 2)
     glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
 
     # Lado direito da base (com textura)
+    glNormal3f(1, 0, 0)  # Normal para o lado direito
     glTexCoord2f(0, 0); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
     glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
     glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, base_depth / 2)
@@ -200,7 +238,7 @@ def setup_camera():
     gluLookAt(camera_distance * math.sin(math.radians(camera_angle_y)),
               camera_distance * math.sin(math.radians(camera_angle_x)),
               camera_distance * math.cos(math.radians(camera_angle_y)),
-              0.0, 1.0, 0.0,
+              0.0, 1, 0,
               0.0, 1.0, 0.0)
 
 # Função para tratar a movimentação da câmera
