@@ -1,7 +1,6 @@
 from OpenGL.GL import *
 import pygame
 
-# Função para carregar texturas
 def load_texture(filename):
     texture_surface = pygame.image.load(filename)
     texture_data = pygame.image.tostring(texture_surface, "RGB", 1)

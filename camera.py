@@ -3,12 +3,10 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from pygame.locals import *
 
-# Variáveis para movimentação da câmera
-camera_angle_x = 15.0  # Rotação ao longo do eixo X
-camera_angle_y = 0.0   # Rotação ao longo do eixo Y
-camera_distance = 6.0  # Distância da câmera
+camera_angle_x = 15.0 
+camera_angle_y = 0.0 
+camera_distance = 6.0 
 
-# Função para configurar a câmera e desenhar a cena
 def setup_camera():
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -19,7 +17,6 @@ def setup_camera():
               0.0, 1, 0,
               0.0, 1.0, 0.0)
 
-# Função para tratar a movimentação da câmera
 def handle_camera_movement(keys):
     global camera_angle_x, camera_angle_y, camera_distance
 
