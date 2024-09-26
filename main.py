@@ -2,8 +2,13 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import numpy as np
 import math
+
+from opengl_init import init_opengl
+from graphics import draw_support_structure
+from textures import load_texture
+from camera import setup_camera, handle_camera_movement
+
 
 # Variáveis do Pêndulo
 length = 1.5         # Comprimento do pêndulo
@@ -16,177 +21,6 @@ damping = 0.01       # Amortecimento
 camera_angle_x = 15.0  # Rotação ao longo do eixo X
 camera_angle_y = 0.0  # Rotação ao longo do eixo Y
 camera_distance = 6.0 # Distância da câmera
-
-# Função para carregar texturas
-def load_texture(filename):
-    texture_surface = pygame.image.load(filename)
-    texture_data = pygame.image.tostring(texture_surface, "RGB", 1)
-    width = texture_surface.get_width()
-    height = texture_surface.get_height()
-
-    texture_id = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, texture_id)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data)
-
-    return texture_id
-
-# Função para configurar a iluminação
-def setup_lighting():
-    glEnable(GL_LIGHTING)
-    
-    # Ativar 4 luzes em diferentes posições
-    glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
-    glEnable(GL_LIGHT2)
-    glEnable(GL_LIGHT3)
-
-    # Configurações para a luz 0 (de uma direção)
-    light0_position = [1.0, 1.0, 2.0, 1.0]
-    light_ambient = [0.2, 0.2, 0.2, 1.0]
-    light_diffuse = [0.7, 0.7, 0.7, 1.0]
-    light_specular = [1.0, 1.0, 1.0, 1.0]
-
-    glLightfv(GL_LIGHT0, GL_POSITION, light0_position)
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
-
-    # Configurações para a luz 1 (lado oposto)
-    light1_position = [-1.0, -1.0, -2.0, 1.0]
-    glLightfv(GL_LIGHT1, GL_POSITION, light1_position)
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular)
-
-    # Configurações para a luz 2 (de cima)
-    light2_position = [0.0, 2.0, 0.0, 1.0]
-    glLightfv(GL_LIGHT2, GL_POSITION, light2_position)
-    glLightfv(GL_LIGHT2, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular)
-
-    # Configurações para a luz 3 (de baixo)
-    light3_position = [0.0, -2.0, 0.0, 1.0]
-    glLightfv(GL_LIGHT3, GL_POSITION, light3_position)
-    glLightfv(GL_LIGHT3, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT3, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT3, GL_SPECULAR, light_specular)
-
-    # # Aumentar a iluminação ambiental geral da cena
-    # global_ambient = [0.3, 0.3, 0.3, 1.0]
-    # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient)
-
-
-# Função para desenhar a base e suportes laterais com volume (cilindros) e uma base com volume
-def draw_support_structure(base_texture):
-    glEnable(GL_TEXTURE_2D)
-    glBindTexture(GL_TEXTURE_2D, base_texture)
-
-    glPushMatrix()
-
-    base_height = 0.3  # Altura da base com volume
-    base_width = 3.0
-    base_depth = 1.5
-    support_height = 2.0  # Altura das colunas verticais
-    bar_radius = 0.05      # Raio dos cilindros (barras)
-
-    # Desenhar a base como um bloco com volume (paralelepípedo) com textura
-    glBegin(GL_QUADS)
-
-    # Parte superior da base (com textura)
-    glNormal3f(0, 1, 0)  # Normal para cima
-    glTexCoord2f(0, 0); glVertex3f(-base_width / 2, 0, base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(base_width / 2, 0, base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, -base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
-
-    # Parte inferior da base (com textura)
-    glNormal3f(0, -1, 0)  # Normal para baixo
-    glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
-
-    # Frente da base (com textura)
-    glNormal3f(0, 0, 1)  # Normal para frente
-    glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, base_depth / 2)
-
-    # Traseira da base (com textura)
-    glNormal3f(0, 0, -1)  # Normal para trás
-    glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, -base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
-
-    # Lado esquerdo da base (com textura)
-    glNormal3f(-1, 0, 0)  # Normal para o lado esquerdo
-    glTexCoord2f(0, 0); glVertex3f(-base_width / 2, -base_height, -base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(-base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(-base_width / 2, 0, base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(-base_width / 2, 0, -base_depth / 2)
-
-    # Lado direito da base (com textura)
-    glNormal3f(1, 0, 0)  # Normal para o lado direito
-    glTexCoord2f(0, 0); glVertex3f(base_width / 2, -base_height, -base_depth / 2)
-    glTexCoord2f(1, 0); glVertex3f(base_width / 2, -base_height, base_depth / 2)
-    glTexCoord2f(1, 1); glVertex3f(base_width / 2, 0, base_depth / 2)
-    glTexCoord2f(0, 1); glVertex3f(base_width / 2, 0, -base_depth / 2)
-
-    glEnd()
-
-    glDisable(GL_TEXTURE_2D)
-
-    # Desenhar os suportes verticais (cilindros)
-    quadric = gluNewQuadric()
-    
-    # Lado esquerdo da frente (ajustado)
-    glPushMatrix()
-    glTranslatef(-base_width / 2 + bar_radius, 0, base_depth / 2)  # Ajuste na posição
-    glRotatef(-90, 1, 0, 0)  # Rotacionar para alinhar ao eixo Y
-    gluCylinder(quadric, bar_radius, bar_radius, support_height, 20, 20)
-    glPopMatrix()
-
-    # Lado direito da frente (ajustado)
-    glPushMatrix()
-    glTranslatef(base_width / 2 - bar_radius, 0, base_depth / 2)  # Ajuste na posição
-    glRotatef(-90, 1, 0, 0)
-    gluCylinder(quadric, bar_radius, bar_radius, support_height, 20, 20)
-    glPopMatrix()
-
-    # Lado esquerdo de trás (ajustado)
-    glPushMatrix()
-    glTranslatef(-base_width / 2 + bar_radius, 0, -base_depth / 2)  # Ajuste na posição
-    glRotatef(-90, 1, 0, 0)
-    gluCylinder(quadric, bar_radius, bar_radius, support_height, 20, 20)
-    glPopMatrix()
-
-    # Lado direito de trás (ajustado)
-    glPushMatrix()
-    glTranslatef(base_width / 2 - bar_radius, 0, -base_depth / 2)  # Ajuste na posição
-    glRotatef(-90, 1, 0, 0)
-    gluCylinder(quadric, bar_radius, bar_radius, support_height, 20, 20)
-    glPopMatrix()
-
-    # Desenhar a barra superior conectando os suportes (cilindro horizontal)
-    glPushMatrix()
-    glTranslatef(-base_width / 2 + bar_radius, support_height, base_depth / 2)  # Mover para o topo do suporte
-    glRotatef(90, 0, 1, 0)  # Rotacionar para alinhar ao eixo Z
-    gluCylinder(quadric, bar_radius, bar_radius, base_width - 2 * bar_radius, 20, 20)
-    glPopMatrix()
-
-    # Desenhar a barra superior de trás (cilindro horizontal)
-    glPushMatrix()
-    glTranslatef(-base_width / 2 + bar_radius, support_height, -base_depth / 2)  # Mover para o topo do suporte de trás
-    glRotatef(90, 0, 1, 0)
-    gluCylinder(quadric, bar_radius, bar_radius, base_width - 2 * bar_radius, 20, 20)
-    glPopMatrix()
-
-    glPopMatrix()
 
 # Função para desenhar o pêndulo com textura
 def draw_pendulum(angle, base_depth, sphere_texture):  
@@ -219,48 +53,6 @@ def draw_pendulum(angle, base_depth, sphere_texture):
     glDisable(GL_TEXTURE_2D)
     glPopMatrix()
 
-# Configuração básica do OpenGL
-def init_opengl():
-    glEnable(GL_DEPTH_TEST)
-    glClearColor(0.2, 0.3, 0.3, 1.0)
-
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    gluPerspective(45, 800 / 600, 0.1, 50.0)
-
-    setup_lighting()
-
-# Função para configurar a câmera e desenhar a cena
-def setup_camera():
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-    gluLookAt(camera_distance * math.sin(math.radians(camera_angle_y)),
-              camera_distance * math.sin(math.radians(camera_angle_x)),
-              camera_distance * math.cos(math.radians(camera_angle_y)),
-              0.0, 1, 0,
-              0.0, 1.0, 0.0)
-
-# Função para tratar a movimentação da câmera
-def handle_camera_movement(keys):
-    global camera_angle_x, camera_angle_y, camera_distance
-
-    camera_speed = 0.5
-    zoom_speed = 0.1
-
-    if keys[K_LEFT]:
-        camera_angle_y -= camera_speed
-    if keys[K_RIGHT]:
-        camera_angle_y += camera_speed
-    if keys[K_UP]:
-        camera_angle_x -= camera_speed
-    if keys[K_DOWN]:
-        camera_angle_x += camera_speed
-    if keys[K_w]:
-        camera_distance -= zoom_speed
-    if keys[K_s]:
-        camera_distance += zoom_speed
-
 # Função para atualizar a simulação do pêndulo
 def update_pendulum(dt):
     global angle, angular_velocity, angular_acceleration
@@ -288,8 +80,8 @@ def main():
     init_opengl()
 
     # Carregar texturas
-    base_texture = load_texture('madera.bmp')
-    sphere_texture = load_texture('texture.jpg')
+    base_texture = load_texture('assets/madera.bmp')
+    sphere_texture = load_texture('assets/texture.jpg')
 
     # Variáveis do pêndulo
     global angle, angular_velocity, angular_acceleration
@@ -329,7 +121,7 @@ def main():
 
         # Trocar os buffers e renderizar a cena
         pygame.display.flip()
-        pygame.time.wait(10)
+        pygame.time.wait(20)
 
 if __name__ == "__main__":
     main()
