@@ -36,7 +36,7 @@ Siga os passos abaixo para configurar o projeto:
 
 3. **Instale as dependências necessárias:**
     ```bash
-    pip install pygame PyOpenGL numpy
+    pip install pygame PyOpenGL
     ```
 
 4. **Execute o projeto:**
