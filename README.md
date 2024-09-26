@@ -1,4 +1,4 @@
-# Projeto de Computação Gráfica - 2024.1
+# Projeto para disciplina de Computação Gráfica - 2024.1
 
 **Estudantes:** Geisianny Bernardo e Nicoly Lana
 
@@ -24,17 +24,22 @@ Este projeto é uma simulação visual de um pêndulo, desenvolvida utilizando *
 
 Siga os passos abaixo para configurar o projeto:
 
-1. **Navegue até o diretório do projeto:**
+1. Clone o repositório:
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   ```
+   
+2. **Navegue até o diretório do projeto:**
     ```bash
     cd <NOME_DA_PASTA>
     ```
 
-2. **Instale as dependências necessárias:**
+3. **Instale as dependências necessárias:**
     ```bash
     pip install pygame PyOpenGL numpy
     ```
 
-3. **Execute o projeto:**
+4. **Execute o projeto:**
     ```bash
     python nome_do_arquivo.py
     ```
